@@ -56,6 +56,18 @@ DEFAULT_CACHE_CONFIG = CacheConfig()
 
 
 class Starlite(Router):
+    """The Starlite application.
+
+    `Starlite` is the root level of the app - it has the base path of "/" and all root level
+    Controllers, Routers and Route Handlers should be registered on it.
+
+    Args:
+        after_request (AfterRequestHandler | None, optional): A sync or async function executed before a request
+            is passed to any route handler. If this function returns a value, the request will not reach the route
+            handler, and instead this value will be used.
+        allowed_hosts (list[str] | None): A list of allowed hosts - enables `AllowedHostsMiddleware`.
+    """
+
     __slots__ = (
         "allowed_hosts",
         "asgi_handler",

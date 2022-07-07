@@ -47,6 +47,7 @@ brotli = { version = "*", optional = true }
 [tool.poetry.dev-dependencies]
 hypothesis = { extras = ["cli"], version = "*" }
 mkdocs-material = "*"
+mkdocstrings = {version = "*", extras = ["python"]}
 pytest = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"

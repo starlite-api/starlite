@@ -60,6 +60,8 @@ nav:
       - usage/15-templating.md
       - usage/16-caching.md
       - usage/17-exceptions.md
+  - API:
+      - api.md
   - migration.md
   - governance-and-contribution.md
   - license.md
@@ -79,3 +81,13 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.details
   - pymdownx.superfences
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            heading_level: 3
+            show_root_heading: true
+            show_source: false
+watch:
+  - starlite
