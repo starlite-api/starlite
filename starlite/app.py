@@ -66,6 +66,10 @@ class Starlite(Router):
             is passed to any route handler. If this function returns a value, the request will not reach the route
             handler, and instead this value will be used.
         allowed_hosts (list[str] | None): A list of allowed hosts - enables `AllowedHostsMiddleware`.
+        before_request (BeforeRequestHandler | None, optional): a sync or async function to execute before a Request is
+            passed to any route handler. If this function returns a value, the request will not reach the route handler,
+            and instead this value will be used.
+        cache_config (CacheConfig, optional): Configures caching behavior of the application.
     """
 
     __slots__ = (
