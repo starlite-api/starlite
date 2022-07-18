@@ -31,7 +31,13 @@ from starlite.plugins.base import PluginProtocol
 from starlite.provide import Provide
 from starlite.response import Response
 from starlite.router import Router
-from starlite.routes import ASGIRoute, BaseRoute, HTTPRoute, WebSocketRoute
+from starlite.routes import (
+    ASGIRoute,
+    BaseRoute,
+    HTTPRoute,
+    WebSocketRoute,
+    WSMessageRoute,
+)
 from starlite.signature import SignatureModelFactory
 from starlite.types import (
     AfterRequestHandler,
@@ -50,6 +56,7 @@ from starlite.utils.templates import create_template_engine
 if TYPE_CHECKING:
     from starlite.handlers.base import BaseRouteHandler
     from starlite.handlers.websocket import WebsocketRouteHandler
+    from starlite.handlers.websocket_message import WSMessageHandler
 
 DEFAULT_OPENAPI_CONFIG = OpenAPIConfig(title="Starlite API", version="1.0.0")
 DEFAULT_CACHE_CONFIG = CacheConfig()
@@ -225,7 +232,7 @@ class Starlite(Router):
             for method, handler_mapping in route.route_handler_map.items():
                 handler, _ = handler_mapping
                 asgi_handlers[method] = self.build_route_middleware_stack(route, handler)
-        elif isinstance(route, WebSocketRoute):
+        elif isinstance(route, (WebSocketRoute, WSMessageRoute)):
             asgi_handlers["websocket"] = self.build_route_middleware_stack(route, route.route_handler)
         elif isinstance(route, ASGIRoute):
             asgi_handlers["asgi"] = self.build_route_middleware_stack(route, route.route_handler)
@@ -244,8 +251,8 @@ class Starlite(Router):
 
     def build_route_middleware_stack(
         self,
-        route: Union[HTTPRoute, WebSocketRoute, ASGIRoute],
-        route_handler: Union[HTTPRouteHandler, "WebsocketRouteHandler", ASGIRouteHandler],
+        route: Union[HTTPRoute, WebSocketRoute, WSMessageRoute, ASGIRoute],
+        route_handler: Union[HTTPRouteHandler, "WebsocketRouteHandler", "WSMessageHandler", ASGIRouteHandler],
     ) -> ASGIApp:
         """Constructs a middleware stack that serves as the point of entry for each route"""
 
@@ -276,7 +283,7 @@ class Starlite(Router):
             if isinstance(route, HTTPRoute):
                 route_handlers = route.route_handlers
             else:
-                route_handlers = [cast(Union[WebSocketRoute, ASGIRoute], route).route_handler]  # type: ignore
+                route_handlers = [cast(Union[WebSocketRoute, WSMessageRoute, ASGIRoute], route).route_handler]  # type: ignore
             for route_handler in route_handlers:
                 self.create_handler_signature_model(route_handler=route_handler)
                 route_handler.resolve_guards()
@@ -287,7 +294,7 @@ class Starlite(Router):
                     route_handler.resolve_after_request()
             if isinstance(route, HTTPRoute):
                 route.create_handler_map()
-            elif isinstance(route, WebSocketRoute):
+            elif isinstance(route, (WebSocketRoute, WSMessageRoute)):
                 route.handler_parameter_model = route.create_handler_kwargs_model(route.route_handler)
         self.construct_route_map()
 

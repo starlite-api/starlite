@@ -1,5 +1,15 @@
 from inspect import isclass
-from typing import Any, Dict, ItemsView, List, Optional, Type, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    ItemsView,
+    List,
+    Optional,
+    Type,
+    Union,
+    cast,
+)
 
 from pydantic import validate_arguments
 from pydantic.fields import FieldInfo  # noqa: TC002
@@ -7,17 +17,23 @@ from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from starlite.controller import Controller
-from starlite.enums import HttpMethod
 from starlite.exceptions import ImproperlyConfiguredException
 from starlite.handlers import (
     ASGIRouteHandler,
     BaseRouteHandler,
     HTTPRouteHandler,
     WebsocketRouteHandler,
+    WSMessageHandler,
 )
 from starlite.provide import Provide
 from starlite.response import Response
-from starlite.routes import ASGIRoute, BaseRoute, HTTPRoute, WebSocketRoute
+from starlite.routes import (
+    ASGIRoute,
+    BaseRoute,
+    HTTPRoute,
+    WebSocketRoute,
+    WSMessageRoute,
+)
 from starlite.types import (
     AfterRequestHandler,
     AfterResponseHandler,
@@ -27,8 +43,12 @@ from starlite.types import (
     Guard,
     MiddlewareProtocol,
     ResponseHeader,
+    RouteHandlerMapValues,
 )
 from starlite.utils import find_index, join_paths, normalize_path, unique
+
+if TYPE_CHECKING:
+    from starlite.enums import HttpMethod
 
 
 class Router:
@@ -86,11 +106,11 @@ class Router:
             self.register(value=route_handler)
 
     @property
-    def route_handler_method_map(self) -> Dict[str, Union[WebsocketRouteHandler, Dict[HttpMethod, HTTPRouteHandler]]]:
+    def route_handler_method_map(self) -> Dict[str, Union[WebsocketRouteHandler, Dict["HttpMethod", HTTPRouteHandler]]]:
         """
         Returns dictionary that maps paths (keys) to a list of route handler functions (values)
         """
-        route_map: Dict[str, Union[WebsocketRouteHandler, Dict[HttpMethod, HTTPRouteHandler]]] = {}
+        route_map: Dict[str, Union[WebsocketRouteHandler, Dict["HttpMethod", HTTPRouteHandler]]] = {}
         for route in self.routes:
             if isinstance(route, HTTPRoute):
                 if not isinstance(route_map.get(route.path), dict):
@@ -105,7 +125,7 @@ class Router:
     @staticmethod
     def map_route_handlers(
         value: Union[Controller, BaseRouteHandler, "Router"],
-    ) -> ItemsView[str, Union[WebsocketRouteHandler, ASGIRoute, Dict[HttpMethod, HTTPRouteHandler]]]:
+    ) -> ItemsView[str, RouteHandlerMapValues]:
         """
         Maps route handlers to http methods
         """
@@ -114,7 +134,7 @@ class Router:
             for path in value.paths:
                 if isinstance(value, HTTPRouteHandler):
                     handlers_map[path] = {http_method: value for http_method in value.http_methods}
-                elif isinstance(value, (WebsocketRouteHandler, ASGIRouteHandler)):
+                elif isinstance(value, (WebsocketRouteHandler, WSMessageHandler, ASGIRouteHandler)):
                     handlers_map[path] = value
         elif isinstance(value, Router):
             handlers_map = value.route_handler_method_map
@@ -168,12 +188,15 @@ class Router:
             if isinstance(handler_or_method_map, WebsocketRouteHandler):
                 route: BaseRoute = WebSocketRoute(path=path, route_handler=handler_or_method_map)
                 self.routes.append(route)
+            elif isinstance(handler_or_method_map, WSMessageHandler):
+                route = WSMessageRoute(path=path, route_handler=handler_or_method_map)
+                self.routes.append(route)
             elif isinstance(handler_or_method_map, ASGIRouteHandler):
                 route = ASGIRoute(path=path, route_handler=handler_or_method_map)
                 self.routes.append(route)
             else:
                 existing_handlers: List[HTTPRouteHandler] = list(self.route_handler_method_map.get(path, {}).values())  # type: ignore
-                route_handlers = unique(list(cast(Dict[HttpMethod, HTTPRouteHandler], handler_or_method_map).values()))
+                route_handlers = unique(list(handler_or_method_map.values()))
                 if existing_handlers:
                     route_handlers.extend(unique(existing_handlers))
                     existing_route_index = find_index(
