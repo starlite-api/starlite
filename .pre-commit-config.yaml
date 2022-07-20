@@ -80,6 +80,7 @@ repos:
         args: ["--unsafe-load-any-extension=y"]
         additional_dependencies:
           [
+            mkdocs_gen_files,
             openapi_schema_pydantic,
             orjson,
             pydantic,

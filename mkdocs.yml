@@ -60,6 +60,7 @@ nav:
       - usage/15-templating.md
       - usage/16-caching.md
       - usage/17-exceptions.md
+  - Reference: reference/
   - migration.md
   - governance-and-contribution.md
   - license.md
@@ -79,3 +80,20 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.details
   - pymdownx.superfences
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            heading_level: 2
+            show_root_heading: true
+            show_source: false
+watch:
+  - starlite
