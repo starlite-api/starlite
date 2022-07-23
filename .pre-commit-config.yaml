@@ -92,6 +92,9 @@ repos:
             pyyaml,
             starlette,
             sqlalchemy,
+            opentelemetry-instrumentation-asgi,
+            opentelemetry-api,
+            opentelemetry-sdk,
             tortoise_orm,
           ]
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -109,4 +112,5 @@ repos:
             starlette,
             sqlalchemy,
             types-freezegun,
+            types-orjson,
           ]
