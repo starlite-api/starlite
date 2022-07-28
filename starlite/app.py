@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Type, Union, cast
 
-from pydantic import validate_arguments
 from pydantic.fields import FieldInfo  # noqa: TC002
 from pydantic.typing import AnyCallable
 from starlette.middleware import Middleware as StarletteMiddleware
@@ -72,7 +71,6 @@ class Starlite(Router):
         "template_engine",
     )
 
-    @validate_arguments(config={"arbitrary_types_allowed": True})
     def __init__(
         self,
         *,

@@ -1,7 +1,6 @@
 from inspect import isclass
 from typing import Any, Dict, ItemsView, List, Optional, Type, Union, cast
 
-from pydantic import validate_arguments
 from pydantic.fields import FieldInfo  # noqa: TC002
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -49,7 +48,6 @@ class Router:
         "tags",
     )
 
-    @validate_arguments(config={"arbitrary_types_allowed": True})
     def __init__(
         self,
         *,
@@ -163,7 +161,7 @@ class Router:
         """
         validated_value = self.validate_registration_value(value)
         routes: List[BaseRoute] = []
-        for route_path, handler_or_method_map in self.map_route_handlers(value=validated_value):
+        for route_path, handler_or_method_map in self.map_route_handlers(validated_value):
             path = join_paths([self.path, route_path])
             if isinstance(handler_or_method_map, WebsocketRouteHandler):
                 route: BaseRoute = WebSocketRoute(path=path, route_handler=handler_or_method_map)

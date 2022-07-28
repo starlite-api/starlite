@@ -12,8 +12,10 @@ from typing import List
 # enable clang compiler optimizations
 CLANG_COMPILE_ARGS = ["-O2"]
 BUILD_TARGETS = [
+    "starlite/asgi.py",
+    "starlite/app.py",
+    "starlite/router.py",
     "starlite/routes.py",
-    "starlite/response.py",
     "starlite/parsers.py",
     "starlite/signature.py",
 ]
