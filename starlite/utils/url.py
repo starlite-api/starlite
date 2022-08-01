@@ -1,3 +1,4 @@
+import re
 from typing import Sequence
 
 
@@ -5,14 +6,12 @@ def normalize_path(path: str) -> str:
     """
     Normalizes a given path by ensuring it starts with a slash and does not end with a slash
     """
-    if path == "/":
+    if path == "":
         return path
+    path = path.rstrip("/")
     if not path.startswith("/"):
         path = "/" + path
-    if path.endswith("/"):
-        path = path[: len(path) - 1]
-    while "//" in path:
-        path = path.replace("//", "/")
+    path = re.sub("//+", "/", path)
     return path
 
 
